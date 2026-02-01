@@ -70,6 +70,10 @@ void loop() {
 
    if (s1 == 0 && s2 == 0 && s3 == 0 && s4 == 0 && s5 == 0 && s6 == 0 && s7 == 0 && s8 == 0 && s9 == 0)
   Stop () ;
+  
+  // Stop when white space is detected (all sensors read white)
+  if (s1 == 1 && s2 == 1 && s3 == 1 && s4 == 1 && s5 == 1 && s6 == 1 && s7 == 1 && s8 == 1)
+  Stop () ;
 
 }
 
