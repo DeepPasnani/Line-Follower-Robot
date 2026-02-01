@@ -1,165 +1,114 @@
-#define IN1 5
-#define IN2 4
-#define IN3 3
-#define IN4 2
-#define ENA 10
-#define ENB 11
-#define LED 13
+int s1 = 0;
+  int s2 = 0;
+  int s3 = 0;
+  int s4 = 0;
+  int s5 = 0;
+  int s6 = 0;
+  int s7 = 0;
+  int s8 = 0;
+  int s9 = 0;
+  
+#define led 13
+int spd = 75;
+const int lmf = A5;
+const int lmb = A4;
 
-#define SENSOR_COUNT 6
-int sensorPins[SENSOR_COUNT] = {A0, A1, A2, A3, A4, A5};
-int sensorValues[SENSOR_COUNT];
-int threshold[SENSOR_COUNT] = {500, 500, 500, 500, 500, 500};
+const int rmb = A3;
+const int rmf = A2;
 
-float Kp = 40.0;
-float Kd = 700.0;
-float Ki = 0.0;
-int baseSpeed = 180;
-int maxSpeed = 250;
-int turnSpeed = 140;
+#define lpwm 10
+#define rpwm 11
 
-float center = 3.5;
-int weights[SENSOR_COUNT] = {1, 2, 3, 4, 5, 6};
 
-float lastError = 0;
-float integral = 0;
-float integralMax = 100;
 
-unsigned long startTime;
-bool started = false;
-unsigned long intersectionTime = 0;
-bool inIntersection = false;
 
 void setup() {
-  pinMode(IN1, OUTPUT);
-  pinMode(IN2, OUTPUT);
-  pinMode(IN3, OUTPUT);
-  pinMode(IN4, OUTPUT);
-  pinMode(ENA, OUTPUT);
-  pinMode(ENB, OUTPUT);
-  pinMode(LED, OUTPUT);
-  
-  for (int i = 0; i < SENSOR_COUNT; i++) {
-    pinMode(sensorPins[i], INPUT);
-  }
-  
-  digitalWrite(LED, HIGH);
-  startTime = millis();
+  for(int i = 2; i <= 9; i++)
+  pinMode(i, INPUT);
+  pinMode(A5, OUTPUT);
+  pinMode(A4, OUTPUT);
+  pinMode(A3, OUTPUT);
+  pinMode(A2, OUTPUT);
+
+  pinMode(lpwm, OUTPUT);
+  pinMode(rpwm, OUTPUT);
+
 }
 
 void loop() {
-  if (!started) {
-    if (millis() - startTime >= 2000) {
-      started = true;
-      digitalWrite(LED, LOW);
-    }
-    return;
+
+  s1 = digitalRead(2);
+  s2 = digitalRead(3);
+  s3 = digitalRead(4);
+  s4 = digitalRead(5);
+  s5 = digitalRead(6); 
+  s6 = digitalRead(7);
+  s7 = digitalRead(8);
+  s8 = digitalRead(9);
+
+  s9 = digitalRead(12);
+
+  if (s4 == 0 || s5 == 0)
+  {
+    forward () ;
+    digitalWrite (led, LOW);
   }
-  
-  if (inIntersection) {
-    if (millis() - intersectionTime >= 200) {
-      inIntersection = false;
-    } else {
-      setMotors(baseSpeed, baseSpeed);
-      return;
-    }
-  }
-  
-  readSensors();
-  
-  int onLine = 0;
-  for (int i = 0; i < SENSOR_COUNT; i++) {
-    if (sensorValues[i] == 1) onLine++;
-  }
-  
-  if (onLine == 0) {
-    integral = 0;
-    handleLineLost();
-    return;
-  }
-  
-  if (onLine >= 4) {
-    integral = 0;
-    handleIntersection();
-    return;
-  }
-  
-  float position = calculatePosition();
-  float error = position - center;
-  
-  integral += error;
-  integral = constrain(integral, -integralMax, integralMax);
-  float derivative = error - lastError;
-  
-  float correction = Kp * error + Ki * integral + Kd * derivative;
-  
-  lastError = error;
-  
-  int leftSpeed = baseSpeed + correction;
-  int rightSpeed = baseSpeed - correction;
-  
-  leftSpeed = constrain(leftSpeed, -maxSpeed, maxSpeed);
-  rightSpeed = constrain(rightSpeed, -maxSpeed, maxSpeed);
-  
-  setMotors(leftSpeed, rightSpeed);
+   if(s6 == 0 || s7 == 0 || s8 == 0)
+   {
+    right () ;
+    digitalWrite (led, LOW);
+   }
+   if(s1 == 0 || s2 == 0 || s3 == 0)
+   {
+    left ();
+    digitalWrite (led, LOW);
+   }
+   if ((s1 == 0 && s8 == 0 && s4 == 0)|| (s1 == 0 && s5 == 0 && s8 == 0) || (s1 == 0 && s5 == 0 && s4 == 0 && s8 == 0) ) {
+   analogWrite (led, 255);
+   delay(5);
+   }
+
+   if (s1 == 0 && s2 == 0 && s3 == 0 && s4 == 0 && s5 == 0 && s6 == 0 && s7 == 0 && s8 == 0 && s9 == 0)
+  Stop () ;
+
 }
 
-void readSensors() {
-  for (int i = 0; i < SENSOR_COUNT; i++) {
-    int raw = analogRead(sensorPins[i]);
-    sensorValues[i] = (raw > threshold[i]) ? 1 : 0;
-  }
+void forward() {
+  analogWrite(lpwm, spd);
+  analogWrite(rpwm, spd);
+  digitalWrite(rmf, HIGH);
+  digitalWrite(rmb, LOW);
+  digitalWrite(lmf, HIGH);
+  digitalWrite(lmb, LOW);
+  delay(10);
 }
 
-float calculatePosition() {
-  float weightedSum = 0;
-  int totalActive = 0;
-  
-  for (int i = 0; i < SENSOR_COUNT; i++) {
-    if (sensorValues[i] == 1) {
-      weightedSum += weights[i];
-      totalActive++;
-    }
-  }
-  
-  if (totalActive == 0) {
-    return center;
-  }
-  
-  return weightedSum / totalActive;
+void right() {
+  analogWrite(lpwm, spd);
+  analogWrite(rpwm, spd);
+  digitalWrite(rmf, LOW);
+  digitalWrite(rmb, HIGH);
+  digitalWrite(lmf, HIGH);
+  digitalWrite(lmb, LOW);
+  delay(10);
+}
+void left() {
+  analogWrite(lpwm, spd);
+  analogWrite(rpwm, spd);
+  digitalWrite(rmf, HIGH);
+  digitalWrite(rmb, LOW);
+  digitalWrite(lmf, LOW);
+  digitalWrite(lmb, HIGH);
+  delay(10);
 }
 
-void handleLineLost() {
-  if (lastError > 0) {
-    setMotors(turnSpeed, -turnSpeed);
-  } else {
-    setMotors(-turnSpeed, turnSpeed);
-  }
-}
-
-void handleIntersection() {
-  intersectionTime = millis();
-  inIntersection = true;
-}
-
-void setMotors(int leftSpeed, int rightSpeed) {
-  if (leftSpeed >= 0) {
-    digitalWrite(IN1, HIGH);
-    digitalWrite(IN2, LOW);
-    analogWrite(ENA, abs(leftSpeed));
-  } else {
-    digitalWrite(IN1, LOW);
-    digitalWrite(IN2, HIGH);
-    analogWrite(ENA, abs(leftSpeed));
-  }
+void Stop() {
+  analogWrite(lpwm, spd);
+  analogWrite(rpwm, spd);
+  digitalWrite(rmf, LOW);
+  digitalWrite(rmb, LOW);
+  digitalWrite(lmf, LOW);
+  digitalWrite(lmb, LOW);
+  digitalWrite(led, HIGH);
   
-  if (rightSpeed >= 0) {
-    digitalWrite(IN3, HIGH);
-    digitalWrite(IN4, LOW);
-    analogWrite(ENB, abs(rightSpeed));
-  } else {
-    digitalWrite(IN3, LOW);
-    digitalWrite(IN4, HIGH);
-    analogWrite(ENB, abs(rightSpeed));
-  }
 }
