@@ -23,9 +23,12 @@ int weights[SENSOR_COUNT] = {1, 2, 3, 4, 5, 6};
 
 float lastError = 0;
 float integral = 0;
+float integralMax = 100;
 
 unsigned long startTime;
 bool started = false;
+unsigned long intersectionTime = 0;
+bool inIntersection = false;
 
 void setup() {
   pinMode(IN1, OUTPUT);
@@ -53,6 +56,15 @@ void loop() {
     return;
   }
   
+  if (inIntersection) {
+    if (millis() - intersectionTime >= 200) {
+      inIntersection = false;
+    } else {
+      setMotors(baseSpeed, baseSpeed);
+      return;
+    }
+  }
+  
   readSensors();
   
   int onLine = 0;
@@ -61,11 +73,13 @@ void loop() {
   }
   
   if (onLine == 0) {
+    integral = 0;
     handleLineLost();
     return;
   }
   
   if (onLine >= 4) {
+    integral = 0;
     handleIntersection();
     return;
   }
@@ -74,6 +88,7 @@ void loop() {
   float error = position - center;
   
   integral += error;
+  integral = constrain(integral, -integralMax, integralMax);
   float derivative = error - lastError;
   
   float correction = Kp * error + Ki * integral + Kd * derivative;
@@ -102,8 +117,8 @@ float calculatePosition() {
   
   for (int i = 0; i < SENSOR_COUNT; i++) {
     if (sensorValues[i] == 1) {
-      weightedSum += weights[i] * sensorValues[i];
-      totalActive += sensorValues[i];
+      weightedSum += weights[i];
+      totalActive++;
     }
   }
   
@@ -123,8 +138,8 @@ void handleLineLost() {
 }
 
 void handleIntersection() {
-  setMotors(baseSpeed, baseSpeed);
-  delay(200);
+  intersectionTime = millis();
+  inIntersection = true;
 }
 
 void setMotors(int leftSpeed, int rightSpeed) {
