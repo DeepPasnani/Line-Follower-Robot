@@ -12,9 +12,10 @@ int lastTurn = 0;
 bool lineSearching = false;
 unsigned long lostLineTime = 0;
 
-void setup() {
+void setup() 
+{
   for (int i = 2; i <= 9; i++)
-    pinMode(i, INPUT);
+  pinMode(i, INPUT);
   pinMode(A5, OUTPUT);
   pinMode(A4, OUTPUT);
   pinMode(A3, OUTPUT);
@@ -24,7 +25,8 @@ void setup() {
   pinMode(led, OUTPUT);
 }
 
-void loop() {
+void loop() 
+{
   s1 = digitalRead(2);
   s2 = digitalRead(3);
   s3 = digitalRead(4);
@@ -36,48 +38,58 @@ void loop() {
   s9 = digitalRead(12);
   
   // ---------- NORMAL LINE FOLLOW ----------
-  if (s4 == 0 || s5 == 0) {
+  if (s4 == 0 || s5 == 0) 
+  {
     forward();
     digitalWrite(led, LOW);
     lineSearching = false;  // Reset search flag
   }
-  else if (s6 == 0 || s7 == 0 || s8 == 0) {
+  else if (s6 == 0 || s7 == 0 || s8 == 0) 
+  {
     right();
     lastTurn = 1;
     digitalWrite(led, LOW);
     lineSearching = false;  // Reset search flag
   }
-  else if (s1 == 0 || s2 == 0 || s3 == 0) {
+  else if (s1 == 0 || s2 == 0 || s3 == 0) 
+  {
     left();
     lastTurn = -1;
     digitalWrite(led, LOW);
     lineSearching = false;  // Reset search flag
   }
   // ---------- LOST LINE (all sensors show white) ----------
-  else if (s1==1 && s2==1 && s3==1 && s4==1 && s5==1 && s6==1 && s7==1 && s8==1) {
-    if (!lineSearching) {
-      // First time losing the line - move forward and mark the time
+  else if (s1==1 && s2==1 && s3==1 && s4==1 && s5==1 && s6==1 && s7==1 && s8==1) 
+  {
+    if (!lineSearching) 
+    {
       forward();
       lostLineTime = millis();
       lineSearching = true;
     }
-    else {
-        if (millis() - lostLineTime >= 250) {
-        if (lastTurn == -1) {
-          left();     // search left
-        } else {
-          right();    // search right
+    else 
+    {
+      if (millis() - lostLineTime >= 250) 
+      {
+        if (lastTurn == -1) 
+        {
+          left();     
+        } 
+        else 
+        {
+          right();   
         }
       }
-      else {
+      else 
+      {
         forward();
       }
     }
   }
 }
 
-// ---------------- MOTOR FUNCTIONS ----------------
-void forward() {
+void forward() 
+{
   analogWrite(lpwm, spd);
   analogWrite(rpwm, spd);
   digitalWrite(rmf, HIGH);
@@ -86,7 +98,8 @@ void forward() {
   digitalWrite(lmb, LOW);
 }
 
-void right() {
+void right() 
+{
   analogWrite(lpwm, spd);
   analogWrite(rpwm, spd);
   digitalWrite(rmf, LOW);
@@ -95,7 +108,8 @@ void right() {
   digitalWrite(lmb, LOW);
 }
 
-void left() {
+void left() 
+{
   analogWrite(lpwm, spd);
   analogWrite(rpwm, spd);
   digitalWrite(rmf, HIGH);
@@ -104,7 +118,8 @@ void left() {
   digitalWrite(lmb, HIGH);
 }
 
-void Stop() {
+void Stop() 
+{
   digitalWrite(rmf, LOW);
   digitalWrite(rmb, LOW);
   digitalWrite(lmf, LOW);
